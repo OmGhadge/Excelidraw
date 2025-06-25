@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import {CreateUserSchema,SiginSchema,CreateRoomSchema} from "@repo/common/types";
+import { prismaClient } from '@repo/db/client';
 const router:Router = Router();
 
 // const creds = z.object({
@@ -15,11 +16,20 @@ const router:Router = Router();
 router.post('/signup', async (req, res, next) => {
   try {
     const { username,password,email} = CreateUserSchema.safeParse(req.body);
+    
 
     if (await User.exists({ email })) {
       res.status(409).json({ message: 'User exists' });   // no “return res …”
       return;                                             // early‑exit with void
     }
+
+   await prismaClient.user.create({
+      data:{
+        email:email,
+        password:password,
+        name:username
+      }
+    })
 
     const hash  = await bcrypt.hash(password, 12);
     const user  = await User.create({ email, password: hash });
@@ -29,7 +39,8 @@ router.post('/signup', async (req, res, next) => {
 
     res.status(201).json({ token });                      // again: no “return …”
   } catch (err) {
-    next(err);                                            // forward to global handler
+    res.status(411).json({message:"user already exists"});
+    // next(err);                                            // forward to global handler
   }
 });
 
