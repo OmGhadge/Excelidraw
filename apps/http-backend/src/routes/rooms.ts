@@ -1,18 +1,28 @@
 import { Router } from 'express';
-import { z } from 'zod';
-import { verifyToken, AuthRequest } from '../middleware/auth';
-import Room from '../models/Room';
-import {CreateRoomSchema} from "@repo/common/types";
-const router:Router = Router();
-// const roomSchema = z.object({ name: z.string().min(1) });
+import { verifyToken, AuthRequest } from '../middleware/auth.js';
+import { prismaClient } from '@repo/db/client';
+import { CreateRoomSchema } from "@repo/common/types";
+
+const router: Router = Router();
 
 // POST /api/rooms
 router.post('/', verifyToken, async (req: AuthRequest, res, next) => {
   try {
-    const { name } = CreateRoomSchema.safeParse(req.body);
-    const room = await Room.create({ name, ownerId: req.userId });
+    const result = CreateRoomSchema.safeParse(req.body);
 
-    // (Optional) Notify WebSocket backend here if needed
+    if (!result.success) {
+      res.status(400).json({ error: result.error.format() });
+      return;
+    }
+
+    const { name } = result.data;
+
+    const room = await prismaClient.room.create({
+  data: {
+    slug: name,
+    adminId: req.userId! 
+  }
+    });
 
     res.status(201).json(room);
   } catch (err) {

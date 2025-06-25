@@ -1,6 +1,7 @@
 // src/middleware/auth.ts
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { JWT_SECRET } from '@repo/backend-common/config';
 
 interface TokenPayload extends JwtPayload {
   userId: string;
@@ -18,22 +19,26 @@ export const verifyToken = (
   const bearer = req.headers.authorization;
 
   if (!bearer?.startsWith('Bearer ')) {
-    res.status(401).json({ message: 'No token' });
+    res.status(401).json({ message: 'No token provided or invalid format' });
     return;
   }
 
-  // ➤ split once and check the second part exists
-  const [, token] = bearer.split(' ');
+  const [, rawToken] = bearer.split(' ');
+  const token = rawToken?.trim(); 
 
-  if (!token) {                        // token is still string | undefined here
-    res.status(401).json({ message: 'No token' });
+  if (!token) {
+    res.status(401).json({ message: 'Token missing after Bearer' });
     return;
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+    const decoded = jwt.verify(token, JWT_SECRET!) as JwtPayload;
 
-    if (typeof decoded !== 'object' || decoded === null || !('userId' in decoded)) {
+    if (
+      typeof decoded !== 'object' ||
+      decoded === null ||
+      !('userId' in decoded)
+    ) {
       res.status(401).json({ message: 'Invalid token payload' });
       return;
     }
@@ -41,6 +46,6 @@ export const verifyToken = (
     req.userId = (decoded as TokenPayload).userId;
     next();
   } catch {
-    res.status(401).json({ message: 'Invalid token' });
+    res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
