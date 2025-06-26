@@ -30,4 +30,19 @@ router.post('/', verifyToken, async (req: AuthRequest, res, next) => {
   }
 });
 
+
+router.post("/chats/:roomId",async (req,res)=>{
+  const roomId=Number(req.params.roomId);
+  const messages=await prismaClient.chat.findMany({
+    where:{
+      roomId:roomId
+    },
+    orderBy:{
+      id:"desc"
+    },
+    take:50
+  });
+
+  res.json({messages});
+});
 export default router;
