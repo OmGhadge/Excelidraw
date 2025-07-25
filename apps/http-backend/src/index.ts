@@ -1,20 +1,26 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/auth.js';
-import roomRoutes from './routes/rooms.js';
+import designsRouter from './routes/designs.js';
 
 dotenv.config();
 
 const app = express();
-app.use(cors());
+const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
+app.use(cors({
+  origin: allowedOrigin,
+  credentials: true,
+}));
 app.use(express.json());
+app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
-app.use('/api/rooms', roomRoutes);
+app.use('/api/designs', designsRouter);
 const PORT:number =3001;
-// ✅ just start the server directly
+
 app.listen(PORT, () => {
-  console.log(`HTTP API 🚀  Listening on port ${PORT}`);
+  console.log(`HTTP API Listening on port ${PORT}`);
 });

@@ -10,29 +10,45 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  password     String
-  name         String
-  photo        String?
-  rooms        Room[]
-  chats        Chat[]
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  photo     String?
+  designs   Design[]
+  chats     Chat[]
 }
 
-model Room{
-  id          Int         @id @default(autoincrement())
-  slug        String      @unique
-  createdAt   DateTime    @default(now())
-  adminId     String 
-  admin       User        @relation(fields: [adminId], references: [id])
+/// A saved design/canvas, owned by a user
+model Design {
+  id          Int       @id @default(autoincrement())
+  name        String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  ownerId     String
+  owner       User      @relation(fields: [ownerId], references: [id])
+  shapes      Shape[]
   chats       Chat[]
+  // Optionally: description, thumbnail, isPublic, etc.
 }
 
-model Chat{
-  id          Int         @id @default(autoincrement())
-  roomId      Int
-  message     String 
-  userId      String
-  room        Room       @relation(fields: [roomId], references:[id])
-  user        User       @relation(fields:[userId], references:[id])
+/// A shape on a design/canvas
+model Shape {
+  id        Int      @id @default(autoincrement())
+  designId  Int
+  type      String   // 'rect', 'circle', 'pencil', 'text', etc.
+  data      Json     // All shape-specific data (coordinates, color, etc.)
+  createdAt DateTime @default(now())
+  design    Design   @relation(fields: [designId], references: [id])
+}
+
+/// Chat/comments on a design
+model Chat {
+  id        Int      @id @default(autoincrement())
+  designId  Int
+  userId    String
+  message   String
+  createdAt DateTime @default(now())
+  design    Design   @relation(fields: [designId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }

@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/middleware/auth.ts","./src/models/room.ts","./src/models/user.ts","./src/routes/auth.ts","./src/routes/rooms.ts"],"version":"5.8.3"}
+{"root":["./src/index.ts","./src/middleware/auth.ts","./src/models/room.ts","./src/models/user.ts","./src/routes/auth.ts","./src/routes/designs.ts","./src/routes/rooms.ts"],"version":"5.8.3"}

@@ -8,7 +8,7 @@ exports.CreateUserSchema = zod_1.z.object({
     email: zod_1.z.string().email()
 });
 exports.SigninSchema = zod_1.z.object({
-    username: zod_1.z.string().min(3).max(20),
+    email: zod_1.z.string().email(),
     password: zod_1.z.string(),
 });
 exports.CreateRoomSchema = zod_1.z.object({
